@@ -15,7 +15,7 @@ module.exports = class EventController {
         return Event.create({ name, LocationId, ScheduleId: scheduleId });
       })
       .then((newEvent) => {
-        res.status(201).send(newEvent);
+        res.status(201).json(newEvent);
       })
       .catch((err) => {
         if (err.name === "SequelizeValidationError") {
@@ -28,11 +28,11 @@ module.exports = class EventController {
 
   static findEvents(req, res) {
     Event.findAll({
-      include: ["Location", "Schedule"],
+      include: ["Location", "Schedule", "Tickets"],
       attributes: { exclude: ["LocationId", "ScheduleId"] },
     })
       .then((data) => {
-        res.status(200).send(data);
+        res.status(200).json(data);
       })
       .catch((err) => {
         console.log(err);
