@@ -1,5 +1,4 @@
-const { Event } = require("../models");
-const { Schedule } = require("../models");
+const { Event, Schedule } = require("../models");
 
 module.exports = class EventController {
   static createEvent(req, res) {
