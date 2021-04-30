@@ -23,7 +23,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         primaryKey: true,
       },
-      name: DataTypes.STRING,
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: { args: true, msg: "Event Name cannot be empty!" },
+          notNull: { args: true, msg: "Event Name cannot be empty!" },
+        },
+      },
       LocationId: DataTypes.UUID,
       ScheduleId: DataTypes.UUID,
     },

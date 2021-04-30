@@ -10,7 +10,6 @@ module.exports = class EventController {
     Schedule.create({ startDate: start, endDate: end })
       .then((newSchedule) => {
         scheduleId = newSchedule.id;
-        console.log(scheduleId);
         return Event.create({ name, LocationId, ScheduleId: scheduleId });
       })
       .then((newEvent) => {
@@ -18,7 +17,11 @@ module.exports = class EventController {
       })
       .catch((err) => {
         if (err.name === "SequelizeValidationError") {
-          res.status(400).json({ message: err.errors[0].message });
+          let errors = [];
+          err.errors.forEach((error) => {
+            errors.push(error.message);
+          });
+          res.status(400).json({ message: errors.join(", ") });
         } else {
           res.status(500).json({ message: "Internal Server Error" });
         }
@@ -27,6 +30,7 @@ module.exports = class EventController {
 
   static findEvents(req, res) {
     Event.findAll({
+      where: req.query.event_id ? { id: req.query.event_id } : "",
       include: ["Location", "Schedule", "Tickets"],
       attributes: { exclude: ["LocationId", "ScheduleId"] },
     })
@@ -34,7 +38,7 @@ module.exports = class EventController {
         res.status(200).json(data);
       })
       .catch((err) => {
-        console.log(err);
+        res.status(500).json({ message: "Internal Server Error" });
       });
   }
 };

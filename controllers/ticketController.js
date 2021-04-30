@@ -22,7 +22,15 @@ module.exports = class TicketController {
         res.status(201).json(newTicket);
       })
       .catch((err) => {
-        res.json(err);
+        if (err.name === "SequelizeValidationError") {
+          let errors = [];
+          err.errors.forEach((error) => {
+            errors.push(error.message);
+          });
+          res.status(400).json({ message: errors.join(",") });
+        } else {
+          res.status(500).json({ message: "Internal Server Error" });
+        }
       });
   }
 };

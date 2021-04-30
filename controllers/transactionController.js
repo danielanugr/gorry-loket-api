@@ -16,7 +16,10 @@ module.exports = class TransactionController {
         where: { id: ticketIds, EventId },
       });
       if (findTicket.length !== tickets.length) {
-        throw { message: "Transaction contain more than 1 event" };
+        throw {
+          name: "customError",
+          message: "Transaction contain more than 1 event",
+        };
       }
 
       const newTransaction = await Transaction.create({
@@ -31,14 +34,33 @@ module.exports = class TransactionController {
         ticket.updatedAt = new Date();
       });
 
-      await TransactionTicket.bulkCreate(tickets);
+      const transTickets = await TransactionTicket.bulkCreate(tickets);
+
+      for (const transaction of transTickets) {
+        const ticket = await Ticket.findByPk(transaction.TicketId);
+        if (ticket.quota < transaction.amount) {
+          throw { name: "customError", message: "ticket quota exceeded" };
+        } else {
+          let newQuota = ticket.quota - transaction.amount;
+          await ticket.update({ quota: newQuota });
+        }
+      }
 
       await trans.commit();
-      res.status(201).json({ message: "transaction success" });
+      res.status(201).json({ transactionId: newTransaction.id });
     } catch (err) {
-      console.log(err, "dari catch");
       await trans.rollback();
-      res.json(err);
+      if (err.name === "SequelizeValidationError") {
+        let errors = [];
+        err.errors.forEach((error) => {
+          errors.push(error.message);
+        });
+        res.status(400).json({ message: errors.join(", ") });
+      } else if (err.name === "customError") {
+        res.status(400).json({ message: err.message });
+      } else {
+        res.status(500).json({ message: "Internal Server Error" });
+      }
     }
   }
 
@@ -52,7 +74,7 @@ module.exports = class TransactionController {
 
       res.status(200).json(transactions);
     } catch (err) {
-      res.json(err);
+      res.status(500).json({ message: "Internal Server Error" });
     }
   }
 };
