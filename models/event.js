@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Event.belongsTo(models.Location, { foreignKey: "LocationId" });
       Event.belongsTo(models.Schedule, { foreignKey: "ScheduleId" });
+      Event.hasMany(models.Ticket, { as: "Tickets" });
     }
   }
   Event.init(
