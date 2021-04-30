@@ -14,6 +14,8 @@ module.exports = class TicketController {
             price: +price,
             name,
           });
+        } else {
+          res.status(404).json({ message: "Event does not exist" });
         }
       })
       .then((newTicket) => {
