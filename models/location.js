@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require("uuid");
 
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Event extends Model {
+  class Location extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,28 +11,22 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Event.belongsTo(models.Location, { foreignKey: "LocationId" });
+      Location.hasMany(models.Event);
     }
   }
-  Event.init(
+  Location.init(
     {
-      id: {
-        type: DataTypes.UUID,
-        primaryKey: true,
-      },
-      name: DataTypes.STRING,
-      LocationId: DataTypes.UUID,
-      ScheduleId: DataTypes.UUID,
+      locationName: DataTypes.STRING,
     },
     {
       sequelize,
-      modelName: "Event",
+      modelName: "Location",
       hooks: {
-        beforeCreate: (event, option) => {
-          event.id = uuidv4();
+        beforeCreate: (location, option) => {
+          location.id = uuidv4();
         },
       },
     }
   );
-  return Event;
+  return Location;
 };
